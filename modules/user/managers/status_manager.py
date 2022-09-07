@@ -1,5 +1,6 @@
 from typing import List, Dict
 from modules.user.data.status_data import StatusData
+from modules.user.exceptions.user_status_fetch_exception import UserStatusFetchException
 from modules.user.objects.status import Status
 
 
@@ -21,8 +22,8 @@ class StatusManager:
             List[Status]
         """
         result = self.__status_data.load_all()
-        if not result.get_status():
-            raise Exception("Could not fetch user statuses")
+        if result.get_affected_rows() == 0:
+            raise UserStatusFetchException("Could not fetch user statuses")
 
         statuses: List[Status] = []
         data = result.get_data()

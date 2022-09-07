@@ -1,4 +1,9 @@
-class Status:
+from typing import Dict
+
+from sk88_http_response.modules.http.interfaces.http_dict import HTTPDict
+
+
+class Status(HTTPDict):
     """ Object representation of status
     """
 
@@ -33,3 +38,14 @@ class Status:
             str
         """
         return self.__description
+
+    def get_http_dict(self) -> Dict[str, any]:
+        """ Get user status HTTP dict
+        Returns:
+            Dict[str, any]
+        """
+        return {
+            "id": self.get_id(),
+            "const": self.get_const(),
+            "description": self.get_description()
+        }
