@@ -1,0 +1,12 @@
+from typing import Dict
+
+
+def get_config() -> Dict[str, str]:
+    return {
+        "MYSQL_DB_HOST": "",
+        "MYSQL_DB_PORT": "",
+        "MYSQL_DB_USER": "",
+        "MYSQL_DB_PWD": "",
+        "MYSQL_DB_NAME": "",
+        "DB_MIGRATION_ROOT_DIR": ""
+    }
