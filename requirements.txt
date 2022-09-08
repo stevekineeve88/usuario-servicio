@@ -1,0 +1,7 @@
+git+https://github.com/stevekineeve88/mysql_schema_manager_library@v0.0.1-alpha#egg=mysql-schema-manager
+git+https://github.com/stevekineeve88/sk88_service_locator_library@v0.0.1-alpha#egg=sk88-service-locator
+git+https://github.com/stevekineeve88/sk88_http_response_library@v0.0.1-alpha#egg=sk88-http-response
+python-dotenv==0.21.0
+Flask==2.2.2
+bcrypt==4.0.0
+PyJWT==2.4.0
