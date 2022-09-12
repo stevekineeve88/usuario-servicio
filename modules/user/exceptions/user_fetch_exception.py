@@ -1,0 +1,2 @@
+class UserFetchException(Exception):
+    pass
