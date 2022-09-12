@@ -100,28 +100,11 @@ class UserManagerTest(IntegrationSetup):
         time.sleep(3)
         user.set_first_name(new_user_info["first_name"])
         user.set_last_name(new_user_info["last_name"])
-        self.user_manager.update(user)
-
-        new_user = self.user_manager.get_by_id(user.get_id())
+        new_user = self.user_manager.update(user)
 
         self.assertEqual(user.get_first_name(), new_user.get_first_name())
         self.assertEqual(user.get_last_name(), new_user.get_last_name())
         self.assertNotEqual(user.get_update_timestamp(), new_user.get_update_timestamp())
-
-    def test_update_fails_on_invalid_id(self):
-        user = User(
-            self.status_manager.get_by_const("ACTIVE"),
-            id=123,
-            uuid="some-uuid",
-            email="email@email.com",
-            first_name="first",
-            last_name="last",
-            created_timestamp=datetime.now(),
-            update_timestamp=datetime.now()
-        )
-        with self.assertRaises(UserUpdateException):
-            self.user_manager.update(user)
-            self.fail("Did not fail on update with invalid ID")
 
     def test_update_status_updates_status(self):
         old_status = self.status_manager.get_by_const("ACTIVE")
@@ -148,7 +131,7 @@ class UserManagerTest(IntegrationSetup):
             email="jj@gmail.com",
             password="password1234"
         )
-        with self.assertRaises(UserUpdateException):
+        with self.assertRaises(UserFetchException):
             self.user_manager.update_status(user.get_id()+1, self.status_manager.get_by_const("INACTIVE"))
             self.fail("Did not fail on update status for invalid user ID")
 

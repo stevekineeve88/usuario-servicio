@@ -154,7 +154,7 @@ class UserData:
             FROM user
             {self.__build_search_query()}
         """, {
-            "search": search
+            "search": f"%{search}%"
         })
 
     @classmethod
@@ -166,4 +166,5 @@ class UserData:
         return f"""
             WHERE user.first_name LIKE %(search)s
                 OR user.last_name LIKE %(search)s
+                OR user.email LIKE %(search)s
         """

@@ -62,7 +62,7 @@ class UserManager:
             raise UserFetchException(f"Could not find user with ID {user_id}")
         return self.__build_user(result.get_data()[0])
 
-    def update(self, user: User):
+    def update(self, user: User) -> User:
         """ Update user
         Args:
             user (User):        User object to update
@@ -72,8 +72,9 @@ class UserManager:
             first_name=user.get_first_name(),
             last_name=user.get_last_name()
         )
-        if result.get_affected_rows() == 0:
+        if not result.get_status():
             raise UserUpdateException(f"Could not update user with ID {user.get_id()}")
+        return self.get_by_id(user.get_id())
 
     def update_status(self, user_id: int, status: Status) -> User:
         """ Update user status
@@ -84,7 +85,7 @@ class UserManager:
             User
         """
         result = self.__user_data.update_status(user_id, status.get_id())
-        if result.get_affected_rows() == 0:
+        if not result.get_status():
             raise UserUpdateException(f"Could not update status of user with ID {user_id}")
         return self.get_by_id(user_id)
 
