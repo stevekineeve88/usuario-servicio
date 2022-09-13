@@ -1,0 +1,2 @@
+class UserDeleteException(Exception):
+    pass

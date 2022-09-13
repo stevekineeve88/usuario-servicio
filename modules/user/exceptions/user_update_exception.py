@@ -1,0 +1,2 @@
+class UserUpdateException(Exception):
+    pass

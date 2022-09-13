@@ -22,3 +22,23 @@ class StatusManagerTest(IntegrationSetup):
         self.assertEqual(3, len(statuses))
         for status in statuses:
             self.assertIn(status.get_const(), expected)
+
+    def test_get_by_id_gets_status(self):
+        statuses = self.status_manager.get_all()
+
+        expected_status = statuses[0]
+        actual_status = self.status_manager.get_by_id(expected_status.get_id())
+
+        self.assertEqual(expected_status.get_id(), actual_status.get_id())
+        self.assertEqual(expected_status.get_const(), actual_status.get_const())
+        self.assertEqual(expected_status.get_description(), actual_status.get_description())
+
+    def test_get_by_const_gets_status(self):
+        statuses = self.status_manager.get_all()
+
+        expected_status = statuses[0]
+        actual_status = self.status_manager.get_by_const(expected_status.get_const())
+
+        self.assertEqual(expected_status.get_id(), actual_status.get_id())
+        self.assertEqual(expected_status.get_const(), actual_status.get_const())
+        self.assertEqual(expected_status.get_description(), actual_status.get_description())
