@@ -62,6 +62,24 @@ class UserData:
             "id": user_id
         })
 
+    def load_auth_info_by_email(self, email: str) -> Result:
+        """ Load password by
+        Args:
+            email:
+
+        Returns:
+
+        """
+        return self.__connection_manager.select(f"""
+            SELECT
+                user.id,
+                user.password
+            FROM user
+            WHERE user.email = %(email)s
+        """, {
+            "email": email
+        })
+
     def update(self, user_id: int, **kwargs) -> Result:
         """ Update user information
         Args:

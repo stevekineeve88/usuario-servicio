@@ -8,5 +8,6 @@ def get_config() -> Dict[str, str]:
         "MYSQL_DB_USER": "",
         "MYSQL_DB_PWD": "",
         "MYSQL_DB_NAME": "",
-        "DB_MIGRATION_ROOT_DIR": ""
+        "DB_MIGRATION_ROOT_DIR": "",
+        "SECRET_KEY": ""
     }

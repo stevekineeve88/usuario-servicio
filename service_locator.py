@@ -1,4 +1,5 @@
 from sk88_service_locator.modules.service.managers.service_manager import ServiceManager
+from modules.auth.config.config import AuthConfig
 from modules.user.config.config import UserConfig
 from modules.util.config.config import UtilConfig
 
@@ -15,6 +16,7 @@ def get_service_manager() -> ServiceManager:
 
     if service_locator is None:
         service_locator = ServiceManager()
+        service_locator.add(AuthConfig().get())
         service_locator.add(UserConfig().get())
         service_locator.add(UtilConfig().get())
 

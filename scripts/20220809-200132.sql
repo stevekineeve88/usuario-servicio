@@ -1,4 +1,3 @@
--- Generated SQL file - 20220809-200132
 CREATE TABLE IF NOT EXISTS `user` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `uuid` BINARY(16) DEFAULT (uuid_to_bin(uuid())),
