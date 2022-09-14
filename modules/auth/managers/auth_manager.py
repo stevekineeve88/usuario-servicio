@@ -50,6 +50,7 @@ class AuthManager:
         if user.get_status().get_id() != self.__status_manager.get_by_const("ACTIVE").get_id():
             raise AuthStatusException(f"User is not active")
 
+        self.__refresh_token_manager.delete_by_user_id(user.get_id())
         access_token = self.__access_token_manager.create(user)
         refresh_token = self.__refresh_token_manager.create(user)
         return ValidationToken(refresh_token, access_token)
@@ -70,7 +71,7 @@ class AuthManager:
 
         access_token = self.__access_token_manager.create(user)
         new_refresh_token_obj = self.__refresh_token_manager.create(user)
-        self.__refresh_token_manager.delete(refresh_token_str)
+        self.__refresh_token_manager.delete_by_token(refresh_token_str)
 
         return ValidationToken(new_refresh_token_obj, access_token)
 

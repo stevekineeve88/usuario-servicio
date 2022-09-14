@@ -229,7 +229,7 @@ class UserManagerTest(IntegrationSetup):
 
     def tearDown(self) -> None:
         result = self.connection_manager.query(f"""
-            TRUNCATE user
+            DELETE FROM user WHERE 1=1
         """)
         if not result.get_status():
             raise Exception(f"Failed to teardown user test instance: {result.get_message()}")

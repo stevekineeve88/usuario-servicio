@@ -61,3 +61,16 @@ class RefreshTokenData:
         """, {
             "token": token
         })
+
+    def delete_by_user_id(self, user_id: int) -> Result:
+        """ Delete by user ID
+        Args:
+            user_id (int):      User ID
+        Returns:
+            Result
+        """
+        return self.__connection_manager.query(f"""
+            DELETE FROM user_refresh_token WHERE user_id = %(user_id)s
+        """, {
+            "user_id": user_id
+        })

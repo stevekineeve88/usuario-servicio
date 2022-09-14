@@ -6,6 +6,7 @@ import jwt
 from mysql_data_manager.modules.connection.objects.result import Result
 from modules.auth.data.refresh_token_data import RefreshTokenData
 from modules.auth.exceptions.refresh_token_create_exception import RefreshTokenCreateException
+from modules.auth.exceptions.refresh_token_delete_exception import RefreshTokenDeleteException
 from modules.auth.managers.refresh_token_manager import RefreshTokenManager
 from modules.user.objects.status import Status
 from modules.user.objects.user import User
@@ -59,3 +60,11 @@ class RefreshTokenManagerTest(unittest.TestCase):
         with self.assertRaises(jwt.exceptions.ExpiredSignatureError):
             self.refresh_token_manager.verify_payload(token)
             self.fail("Did not fail on refresh token expired signature")
+            
+    def test_delete_by_user_id_fails_on_failed_delete(self):
+        self.refresh_token_data.delete_by_user_id = MagicMock(return_value=Result(False))
+        with self.assertRaises(RefreshTokenDeleteException):
+            self.refresh_token_manager.delete_by_user_id(2)
+            self.fail("Did not fail on deleting refresh token by user ID")
+
+        self.refresh_token_data.delete_by_user_id.assert_called_once_with(2)

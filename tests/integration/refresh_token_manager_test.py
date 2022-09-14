@@ -1,3 +1,5 @@
+import time
+
 from mysql_data_manager.modules.connection.managers.connection_manager import ConnectionManager
 from modules.auth.exceptions.refresh_token_delete_exception import RefreshTokenDeleteException
 from modules.auth.exceptions.refresh_token_fetch_exception import RefreshTokenFetchException
@@ -48,7 +50,7 @@ class RefreshTokenManagerTest(IntegrationSetup):
             self.refresh_token_manager.get("SOME_RANDOM_TOKEN")
             self.fail("Did not fail on fetching invalid refresh token")
 
-    def test_delete_deletes_valid_refresh_token(self):
+    def test_delete_by_token_deletes_valid_refresh_token(self):
         user_info = {
             "email": "ss@gmail.com",
             "first_name": "Scott",
@@ -58,16 +60,39 @@ class RefreshTokenManagerTest(IntegrationSetup):
         user = self.user_manager.create(self.status_manager.get_by_const("ACTIVE"), **user_info)
 
         refresh_token = self.refresh_token_manager.create(user)
-        self.refresh_token_manager.delete(refresh_token.get_token())
+        self.refresh_token_manager.delete_by_token(refresh_token.get_token())
 
         with self.assertRaises(RefreshTokenFetchException):
             self.refresh_token_manager.get(refresh_token.get_token())
             self.fail("Did not fail on retrieving refresh token after deletion")
 
-    def test_delete_fails_on_missing_refresh_token(self):
+    def test_delete_by_token_fails_on_missing_refresh_token(self):
         with self.assertRaises(RefreshTokenDeleteException):
-            self.refresh_token_manager.delete("SOME_RANDOM_TOKEN")
+            self.refresh_token_manager.delete_by_token("SOME_RANDOM_TOKEN")
             self.fail("Did not fail on deleting invalid token")
+
+    def test_delete_by_user_id_deletes_all_refresh_tokens(self):
+        user_info = {
+            "email": "ss@gmail.com",
+            "first_name": "Scott",
+            "last_name": "Smith",
+            "password": "password1234"
+        }
+        user = self.user_manager.create(self.status_manager.get_by_const("ACTIVE"), **user_info)
+
+        refresh_token_1 = self.refresh_token_manager.create(user)
+        time.sleep(1)
+        refresh_token_2 = self.refresh_token_manager.create(user)
+
+        self.refresh_token_manager.delete_by_user_id(user.get_id())
+
+        with self.assertRaises(RefreshTokenFetchException):
+            self.refresh_token_manager.get(refresh_token_1.get_token())
+            self.fail("Did not fail to fetch refresh token 1")
+
+        with self.assertRaises(RefreshTokenFetchException):
+            self.refresh_token_manager.get(refresh_token_2.get_token())
+            self.fail("Did not fail to fetch refresh token 2")
 
     def tearDown(self) -> None:
         result = self.connection_manager.query(

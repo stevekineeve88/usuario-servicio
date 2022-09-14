@@ -8,7 +8,7 @@ class ConnectionManagerFactoryTest(FactoryInterface):
         config = get_config()
         self.__connection_manager: ConnectionManager = ConnectionManager(
             "test_connection_pool",
-            3,
+            10,
             host=config["MYSQL_DB_HOST"],
             port=config["MYSQL_DB_PORT"],
             user=config["MYSQL_DB_USER"],
