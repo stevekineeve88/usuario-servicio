@@ -1,0 +1,2 @@
+class AuthStatusException(Exception):
+    pass

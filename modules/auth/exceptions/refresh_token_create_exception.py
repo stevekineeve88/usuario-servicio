@@ -1,0 +1,2 @@
+class RefreshTokenCreateException(Exception):
+    pass

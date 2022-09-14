@@ -1,8 +1,5 @@
 import time
-from datetime import datetime
-
 from mysql_data_manager.modules.connection.managers.connection_manager import ConnectionManager
-
 from modules.user.exceptions.user_create_exception import UserCreateException
 from modules.user.exceptions.user_delete_exception import UserDeleteException
 from modules.user.exceptions.user_fetch_exception import UserFetchException
@@ -10,7 +7,6 @@ from modules.user.exceptions.user_update_exception import UserUpdateException
 from modules.user.managers.status_manager import StatusManager
 from modules.user.managers.user_manager import UserManager
 from modules.user.objects.status import Status
-from modules.user.objects.user import User
 from tests.integration.setup.integration_setup import IntegrationSetup
 
 

@@ -1,0 +1,2 @@
+class RefreshTokenDeleteException(Exception):
+    pass
