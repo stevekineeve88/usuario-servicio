@@ -1,0 +1,2 @@
+class PasswordResetMatchException(Exception):
+    pass

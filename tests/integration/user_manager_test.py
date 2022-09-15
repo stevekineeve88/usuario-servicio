@@ -1,5 +1,9 @@
 import time
 from mysql_data_manager.modules.connection.managers.connection_manager import ConnectionManager
+from modules.auth.exceptions.auth_password_exception import AuthPasswordException
+from modules.auth.managers.auth_manager import AuthManager
+from modules.password.exceptions.password_reset_fetch_exception import PasswordResetFetchException
+from modules.password.managers.password_reset_manager import PasswordResetManager
 from modules.user.exceptions.user_create_exception import UserCreateException
 from modules.user.exceptions.user_delete_exception import UserDeleteException
 from modules.user.exceptions.user_fetch_exception import UserFetchException
@@ -7,20 +11,27 @@ from modules.user.exceptions.user_update_exception import UserUpdateException
 from modules.user.managers.status_manager import StatusManager
 from modules.user.managers.user_manager import UserManager
 from modules.user.objects.status import Status
+from modules.util.managers.redis_manager import RedisManager
 from tests.integration.setup.integration_setup import IntegrationSetup
 
 
 class UserManagerTest(IntegrationSetup):
     user_manager: UserManager = None
     connection_manager: ConnectionManager = None
+    redis_manager: RedisManager = None
     status_manager: StatusManager = None
+    password_reset_manager: PasswordResetManager = None
+    auth_manager: AuthManager = None
 
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()
         cls.user_manager = cls.service_locator.get(UserManager.__name__)
         cls.connection_manager = cls.service_locator.get(ConnectionManager.__name__)
+        cls.redis_manager = cls.service_locator.get(RedisManager.__name__)
         cls.status_manager = cls.service_locator.get(StatusManager.__name__)
+        cls.password_reset_manager = cls.service_locator.get(PasswordResetManager.__name__)
+        cls.auth_manager = cls.service_locator.get(AuthManager.__name__)
 
     def test_create_creates_user(self):
         status = self.status_manager.get_by_const("ACTIVE")
@@ -143,6 +154,39 @@ class UserManagerTest(IntegrationSetup):
             self.user_manager.update_status(user.get_id(), Status(123456, "SOME_CONST", "Description"))
             self.fail("Did not fail on update status for invalid status ID")
 
+    def test_update_password_updates_password(self):
+        old_password = "password1234"
+        user_info = {
+            "email": "ss@gmail.com",
+            "first_name": "Scott",
+            "last_name": "Smith",
+            "password": old_password
+        }
+        user = self.user_manager.create(self.status_manager.get_by_const("ACTIVE"), **user_info)
+        password_reset_token = self.password_reset_manager.create(user.get_id())
+        new_password = "new_password"
+        self.user_manager.update_password(password_reset_token.get_token(), new_password)
+
+        self.auth_manager.authenticate(user.get_email(), new_password)
+        with self.assertRaises(AuthPasswordException):
+            self.auth_manager.authenticate(user.get_email(), old_password)
+            self.fail("Did not fail on authentication on old password before update")
+
+    def test_update_password_allows_one_token_use(self):
+        user_info = {
+            "email": "ss@gmail.com",
+            "first_name": "Scott",
+            "last_name": "Smith",
+            "password": "password1234"
+        }
+        user = self.user_manager.create(self.status_manager.get_by_const("ACTIVE"), **user_info)
+        password_reset_token = self.password_reset_manager.create(user.get_id())
+
+        self.user_manager.update_password(password_reset_token.get_token(), "some_new_password")
+        with self.assertRaises(PasswordResetFetchException):
+            self.user_manager.update_password(password_reset_token.get_token(), "another_new_password")
+            self.fail("Did not fail on re-using password reset token for password update")
+
     def test_delete_deletes_user(self):
         user = self.user_manager.create(
             self.status_manager.get_by_const("ACTIVE"),
@@ -234,3 +278,4 @@ class UserManagerTest(IntegrationSetup):
         if not result.get_status():
             raise Exception(f"Failed to teardown user test instance: {result.get_message()}")
 
+        self.redis_manager.get_connection().flushdb()

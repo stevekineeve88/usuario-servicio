@@ -1,4 +1,5 @@
 from sk88_service_locator.modules.service.interfaces.factory_interface import FactoryInterface
+from modules.password.managers.password_reset_manager import PasswordResetManager
 from modules.user.data.user_data import UserData
 from modules.user.managers.status_manager import StatusManager
 from modules.user.managers.user_manager import UserManager
@@ -11,5 +12,6 @@ class UserManagerFactory(FactoryInterface):
     def invoke(self, service_manager):
         return UserManager(
             user_data=service_manager.get(UserData.__name__),
-            status_manager=service_manager.get(StatusManager.__name__)
+            status_manager=service_manager.get(StatusManager.__name__),
+            password_reset_manager=service_manager.get(PasswordResetManager.__name__)
         )

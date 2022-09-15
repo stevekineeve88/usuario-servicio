@@ -24,7 +24,7 @@ class UserData:
                 first_name (str)
                 last_name (str)
                 email (str)
-                password (str)          - Encrypted password
+                password (bytes)          - Encrypted password
         Returns:
             Result
         """
@@ -115,6 +115,22 @@ class UserData:
             WHERE id = %(id)s
         """, {
             "status_id": status_id,
+            "id": user_id
+        })
+
+    def update_password(self, user_id: int, password: bytes) -> Result:
+        """ Update user password
+        Args:
+            user_id (int):          User ID
+            password (str):         Encrypted password
+        Returns:
+            Result
+        """
+        return self.__connection_manager.query(f"""
+            UPDATE user SET password = %(password)s
+            WHERE id = %(id)s
+        """, {
+            "password": password,
             "id": user_id
         })
 
