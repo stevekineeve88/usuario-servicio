@@ -1,0 +1,2 @@
+class PasswordResetCreateException(Exception):
+    pass

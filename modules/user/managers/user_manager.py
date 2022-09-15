@@ -1,5 +1,6 @@
 from typing import Dict, List
-
+from modules.password.exceptions.password_reset_match_exception import PasswordResetMatchException
+from modules.password.managers.password_reset_manager import PasswordResetManager
 from modules.user.data.user_data import UserData
 from modules.user.exceptions.user_create_exception import UserCreateException
 from modules.user.exceptions.user_delete_exception import UserDeleteException
@@ -25,6 +26,7 @@ class UserManager:
         """
         self.__user_data: UserData = kwargs.get("user_data")
         self.__status_manager: StatusManager = kwargs.get("status_manager")
+        self.__password_reset_manager: PasswordResetManager = kwargs.get("password_reset_manager")
 
     def create(self, status: Status, **kwargs) -> User:
         """ Create user
@@ -62,6 +64,18 @@ class UserManager:
             raise UserFetchException(f"Could not find user with ID {user_id}")
         return self.__build_user(result.get_data()[0])
 
+    def get_by_email(self, email: str) -> User:
+        """ Get user by email
+        Args:
+            email (str):
+        Returns:
+            User
+        """
+        result = self.__user_data.load_by_email(email)
+        if result.get_affected_rows() == 0:
+            raise UserFetchException(f"Could not find user with email {email}")
+        return self.__build_user(result.get_data()[0])
+
     def update(self, user: User) -> User:
         """ Update user
         Args:
@@ -88,6 +102,24 @@ class UserManager:
         if not result.get_status():
             raise UserUpdateException(f"Could not update status of user with ID {user_id}")
         return self.get_by_id(user_id)
+
+    def update_password(self, token: str, password: str):
+        """ Update user password
+        Args:
+            token (str):            Password reset token
+            password (str):         Password un-encrypted
+        """
+        self.__password_reset_manager.verify_payload(token)
+        password_reset_token = self.__password_reset_manager.get_by_token(token)
+        if token != password_reset_token.get_token():
+            self.__password_reset_manager.delete_by_user_id(password_reset_token.get_user_id())
+            raise PasswordResetMatchException("Password reset token does not match")
+        self.__password_reset_manager.delete_by_user_id(password_reset_token.get_user_id())
+
+        password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+        result = self.__user_data.update_password(password_reset_token.get_user_id(), password)
+        if not result.get_status():
+            raise UserUpdateException("Could not update user password")
 
     def delete(self, user_id: int):
         """ Delete user by ID
