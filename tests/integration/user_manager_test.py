@@ -78,16 +78,34 @@ class UserManagerTest(IntegrationSetup):
             self.fail("Did not fail on create for invalid status")
 
     def test_get_by_id_fails_on_invalid_id(self):
-        user = self.user_manager.create(
-            self.status_manager.get_by_const("ACTIVE"),
-            first_name="John",
-            last_name="Jones",
-            email="jj@gmail.com",
-            password="password1234"
-        )
         with self.assertRaises(UserFetchException):
-            self.user_manager.get_by_id(user.get_id()+1)
+            self.user_manager.get_by_id(1)
             self.fail("Did not fail on fetch by invalid ID")
+
+    def test_get_by_email_fetches_by_email(self):
+        user_info = {
+            "first_name": "Bob",
+            "last_name": "Jenkins",
+            "email": "bj@gmail.com",
+            "password": "password1234"
+        }
+        status = self.status_manager.get_by_const("ACTIVE")
+        user = self.user_manager.create(status, **user_info)
+        fetched_user = self.user_manager.get_by_email(user.get_email())
+
+        self.assertEqual(user.get_id(), fetched_user.get_id())
+        self.assertEqual(user.get_email(), fetched_user.get_email())
+        self.assertEqual(user.get_first_name(), fetched_user.get_first_name())
+        self.assertEqual(user.get_last_name(), fetched_user.get_last_name())
+        self.assertEqual(user.get_uuid(), fetched_user.get_uuid())
+        self.assertEqual(user.get_created_timestamp(), fetched_user.get_created_timestamp())
+        self.assertEqual(user.get_update_timestamp(), fetched_user.get_update_timestamp())
+        self.assertEqual(user.get_status().get_id(), fetched_user.get_status().get_id())
+
+    def test_get_by_email_fails_on_invalid_email(self):
+        with self.assertRaises(UserFetchException):
+            self.user_manager.get_by_email("random@gmail.com")
+            self.fail("Did not fail on invalid email for fetching user")
 
     def test_update_updates_user(self):
         original_user_info = {

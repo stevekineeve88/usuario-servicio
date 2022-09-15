@@ -64,6 +64,18 @@ class UserManager:
             raise UserFetchException(f"Could not find user with ID {user_id}")
         return self.__build_user(result.get_data()[0])
 
+    def get_by_email(self, email: str) -> User:
+        """ Get user by email
+        Args:
+            email (str):
+        Returns:
+            User
+        """
+        result = self.__user_data.load_by_email(email)
+        if result.get_affected_rows() == 0:
+            raise UserFetchException(f"Could not find user with email {email}")
+        return self.__build_user(result.get_data()[0])
+
     def update(self, user: User) -> User:
         """ Update user
         Args:

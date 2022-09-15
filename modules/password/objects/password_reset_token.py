@@ -1,4 +1,9 @@
-class PasswordResetToken:
+from typing import Dict
+
+from sk88_http_response.modules.http.interfaces.http_dict import HTTPDict
+
+
+class PasswordResetToken(HTTPDict):
     """ Object representing password reset token
     """
 
@@ -33,3 +38,12 @@ class PasswordResetToken:
             int
         """
         return self.__user_id
+
+    def get_http_dict(self) -> Dict[str, any]:
+        """ HTTP dict of password reset object
+        Returns:
+            Dict[str, any]
+        """
+        return {
+            "token": self.get_token()
+        }

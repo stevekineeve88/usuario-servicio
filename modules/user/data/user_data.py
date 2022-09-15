@@ -62,6 +62,29 @@ class UserData:
             "id": user_id
         })
 
+    def load_by_email(self, email: str) -> Result:
+        """ Load by email
+        Args:
+            email (str):
+        Returns:
+            Result
+        """
+        return self.__connection_manager.select(f"""
+            SELECT
+                user.id,
+                bin_to_uuid(user.uuid) as uuid,
+                user.first_name,
+                user.last_name,
+                user.email,
+                user.status_id,
+                user.created_timestamp,
+                user.update_timestamp
+            FROM user
+            WHERE user.email = %(email)s
+        """, {
+            "email": email
+        })
+
     def load_auth_info_by_email(self, email: str) -> Result:
         """ Load authentication information by user email
         Args:
