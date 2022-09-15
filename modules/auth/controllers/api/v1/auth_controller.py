@@ -8,6 +8,7 @@ from modules.auth.exceptions.auth_status_exception import AuthStatusException
 from modules.auth.exceptions.refresh_token_create_exception import RefreshTokenCreateException
 from modules.auth.exceptions.refresh_token_delete_exception import RefreshTokenDeleteException
 from modules.auth.exceptions.refresh_token_fetch_exception import RefreshTokenFetchException
+from modules.auth.exceptions.refresh_token_match_exception import RefreshTokenMatchException
 from modules.auth.managers.access_token_manager import AccessTokenManager
 from modules.auth.managers.auth_manager import AuthManager
 from modules.user.exceptions.user_fetch_exception import UserFetchException
@@ -81,7 +82,8 @@ def refresh_access_token():
         UserFetchException,
         AuthStatusException,
         RefreshTokenCreateException,
-        RefreshTokenDeleteException
+        RefreshTokenDeleteException,
+        RefreshTokenMatchException
     ) as e:
         return HTTPResponse(HTTPStatus.FORBIDDEN, str(e)).get_response()
     except Exception as e:

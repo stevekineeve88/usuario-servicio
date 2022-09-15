@@ -1,0 +1,2 @@
+class RefreshTokenMatchException(Exception):
+    pass

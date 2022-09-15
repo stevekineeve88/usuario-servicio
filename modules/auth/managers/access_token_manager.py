@@ -1,7 +1,6 @@
 import datetime
 from typing import Dict
 import jwt
-from modules.user.objects.user import User
 
 
 class AccessTokenManager:
@@ -16,17 +15,20 @@ class AccessTokenManager:
         """
         self.__secret_key = kwargs.get("secret_key")
 
-    def create(self, user: User) -> str:
+    def create(self, **kwargs) -> str:
         """ Create access token
         Args:
-            user (User):        User object
+            kwargs:        Token info
+                user_id (int)               - User ID
+                user_email (str)            - User email
+                user_uuid (str)             - User UUID
         Returns:
             str
         """
         return jwt.encode({
-            "sub:id": user.get_id(),
-            "sub:email": user.get_email(),
-            "sub:uuid": user.get_uuid(),
+            "sub:id": kwargs.get("user_id"),
+            "sub:email": kwargs.get("user_email"),
+            "sub:uuid": kwargs.get("user_uuid"),
             "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
         }, self.__secret_key, algorithm="HS256")
 

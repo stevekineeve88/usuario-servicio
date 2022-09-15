@@ -3,13 +3,11 @@ import time
 import unittest
 from unittest.mock import patch, MagicMock
 import jwt
-from mysql_data_manager.modules.connection.objects.result import Result
 from modules.auth.data.refresh_token_data import RefreshTokenData
 from modules.auth.exceptions.refresh_token_create_exception import RefreshTokenCreateException
 from modules.auth.exceptions.refresh_token_delete_exception import RefreshTokenDeleteException
 from modules.auth.managers.refresh_token_manager import RefreshTokenManager
-from modules.user.objects.status import Status
-from modules.user.objects.user import User
+from modules.util.objects.redis_result import RedisResult
 
 
 class RefreshTokenManagerTest(unittest.TestCase):
@@ -24,21 +22,11 @@ class RefreshTokenManagerTest(unittest.TestCase):
         )
 
     def test_create_fails_on_create_error(self):
-        self.refresh_token_data.insert = MagicMock(return_value=Result(False))
-
-        user = User(
-            Status(1, "CONST", "Description"),
-            id=1,
-            uuid="UUID",
-            email="ss@gmail.com",
-            first_name="first",
-            last_name="last",
-            created_timestamp=datetime.datetime.now(),
-            update_timestamp=datetime.datetime.now(),
-        )
+        self.refresh_token_data.insert = MagicMock(return_value=RedisResult(False))
         with self.assertRaises(RefreshTokenCreateException):
-            self.refresh_token_manager.create(user)
+            self.refresh_token_manager.create(1, "UUID")
             self.fail("Did not fail on refresh token creation")
+        self.refresh_token_data.insert.assert_called_once()
 
     def test_verify_payload_fails_on_wrong_required_payload(self):
         token = jwt.encode({
@@ -62,9 +50,9 @@ class RefreshTokenManagerTest(unittest.TestCase):
             self.fail("Did not fail on refresh token expired signature")
             
     def test_delete_by_user_id_fails_on_failed_delete(self):
-        self.refresh_token_data.delete_by_user_id = MagicMock(return_value=Result(False))
+        self.refresh_token_data.delete_by_user_uuid = MagicMock(return_value=RedisResult(False))
         with self.assertRaises(RefreshTokenDeleteException):
-            self.refresh_token_manager.delete_by_user_id(2)
+            self.refresh_token_manager.delete_by_user_uuid("some-random-uuid")
             self.fail("Did not fail on deleting refresh token by user ID")
 
-        self.refresh_token_data.delete_by_user_id.assert_called_once_with(2)
+        self.refresh_token_data.delete_by_user_uuid.assert_called_once_with("some-random-uuid")
