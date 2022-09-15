@@ -1,5 +1,5 @@
-from mysql_data_manager.modules.connection.managers.connection_manager import ConnectionManager
-from mysql_data_manager.modules.connection.objects.result import Result
+from modules.util.managers.redis_manager import RedisManager
+from modules.util.objects.redis_result import RedisResult
 
 
 class RefreshTokenData:
@@ -12,65 +12,33 @@ class RefreshTokenData:
             **kwargs:       Dependencies
                 connection_manager (ConnectionManager) - Connection manager
         """
-        self.__connection_manager: ConnectionManager = kwargs.get("connection_manager")
+        self.__redis_manager: RedisManager = kwargs.get("redis_manager")
 
-    def insert(self, user_id: int, token: str) -> Result:
+    def insert(self, user_uuid: str, token: str, expiry: int) -> RedisResult:
         """ Insert a refresh token
         Args:
-            user_id (int):          User ID
+            user_uuid (int):        User UUID
             token (str):            JWT token
+            expiry (int):           Expiry in seconds
         Returns:
-            Result
+            RedisResult
         """
-        return self.__connection_manager.insert(f"""
-            INSERT INTO user_refresh_token (user_id, token)
-            VALUES (%(user_id)s, %(token)s)
-        """, {
-            "user_id": user_id,
-            "token": token
-        })
+        return self.__redis_manager.set(user_uuid, token, expiry)
 
-    def load_by_token(self, token: str) -> Result:
-        """ Load by token
+    def load_by_user_uuid(self, user_uuid: str) -> RedisResult:
+        """ Load by user UUID
         Args:
-            token (str):            JWT token
+            user_uuid (str):            User UUID
         Returns:
-            Result
+            RedisResult
         """
-        return self.__connection_manager.select(f"""
-            SELECT
-                user_refresh_token.id,
-                user_refresh_token.token,
-                user_refresh_token.user_id,
-                user_refresh_token.created_timestamp
-            FROM user_refresh_token
-            WHERE user_refresh_token.token = %(token)s
-        """, {
-            "token": token
-        })
+        return self.__redis_manager.get(user_uuid)
 
-    def delete_by_token(self, token: str) -> Result:
-        """ Delete by token
+    def delete_by_user_uuid(self, user_uuid: str) -> RedisResult:
+        """ Delete by user UUID
         Args:
-            token (str):            JWT token
+            user_uuid (str):            User UUID
         Returns:
-            Result
+            RedisResult
         """
-        return self.__connection_manager.query(f"""
-            DELETE FROM user_refresh_token WHERE token = %(token)s
-        """, {
-            "token": token
-        })
-
-    def delete_by_user_id(self, user_id: int) -> Result:
-        """ Delete by user ID
-        Args:
-            user_id (int):      User ID
-        Returns:
-            Result
-        """
-        return self.__connection_manager.query(f"""
-            DELETE FROM user_refresh_token WHERE user_id = %(user_id)s
-        """, {
-            "user_id": user_id
-        })
+        return self.__redis_manager.delete(user_uuid)

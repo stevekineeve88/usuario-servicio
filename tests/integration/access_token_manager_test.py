@@ -28,7 +28,11 @@ class AccessTokenManagerTest(IntegrationSetup):
         }
         user = self.user_manager.create(self.status_manager.get_by_const("ACTIVE"), **user_info)
 
-        token = self.access_token_manager.create(user)
+        token = self.access_token_manager.create(
+            user_id=user.get_id(),
+            user_uuid=user.get_uuid(),
+            user_email=user.get_email()
+        )
         payload = self.access_token_manager.verify_payload(token)
 
         self.assertEqual(4, len(payload))

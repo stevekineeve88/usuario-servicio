@@ -1,6 +1,7 @@
 import bcrypt
 from modules.auth.exceptions.auth_password_exception import AuthPasswordException
 from modules.auth.exceptions.auth_status_exception import AuthStatusException
+from modules.auth.exceptions.refresh_token_match_exception import RefreshTokenMatchException
 from modules.auth.managers.access_token_manager import AccessTokenManager
 from modules.auth.managers.refresh_token_manager import RefreshTokenManager
 from modules.auth.objects.validation_token import ValidationToken
@@ -46,32 +47,42 @@ class AuthManager:
         if not bcrypt.checkpw(password.encode(), user_auth_info["password"].encode()):
             raise AuthPasswordException(f"Authentication failed")
 
-        user = self.__user_manager.get_by_id(user_auth_info["id"])
-        if user.get_status().get_id() != self.__status_manager.get_by_const("ACTIVE").get_id():
+        if user_auth_info["status_id"] != self.__status_manager.get_by_const("ACTIVE").get_id():
             raise AuthStatusException(f"User is not active")
 
-        self.__refresh_token_manager.delete_by_user_id(user.get_id())
-        access_token = self.__access_token_manager.create(user)
-        refresh_token = self.__refresh_token_manager.create(user)
+        access_token = self.__access_token_manager.create(
+            user_id=user_auth_info["id"],
+            user_email=user_auth_info["email"],
+            user_uuid=user_auth_info["uuid"]
+        )
+        refresh_token = self.__refresh_token_manager.create(int(user_auth_info["id"]), user_auth_info["uuid"])
         return ValidationToken(refresh_token, access_token)
 
-    def generate_validation_token(self, refresh_token_str: str) -> ValidationToken:
+    def generate_validation_token(self, refresh_token: str) -> ValidationToken:
         """ Generate validation token from refresh token
         Args:
-            refresh_token_str (str):            Valid refresh token
+            refresh_token (str):            Refresh token
         Returns:
             ValidationToken
         """
-        self.__refresh_token_manager.verify_payload(refresh_token_str)
+        payload = self.__refresh_token_manager.verify_payload(refresh_token)
 
-        old_refresh_token_obj = self.__refresh_token_manager.get(refresh_token_str)
-        user = self.__user_manager.get_by_id(old_refresh_token_obj.get_user_id())
+        user_uuid = payload["sub:uuid"]
+        user_id = payload["sub:id"]
+
+        if refresh_token != self.__refresh_token_manager.get_by_user_uuid(user_uuid):
+            self.__refresh_token_manager.delete_by_user_uuid(user_uuid)
+            raise RefreshTokenMatchException("Refresh token does not match active")
+
+        user = self.__user_manager.get_by_id(user_id)
         if user.get_status().get_id() != self.__status_manager.get_by_const("ACTIVE").get_id():
             raise AuthStatusException(f"User is not active")
 
-        access_token = self.__access_token_manager.create(user)
-        new_refresh_token_obj = self.__refresh_token_manager.create(user)
-        self.__refresh_token_manager.delete_by_token(refresh_token_str)
-
+        access_token = self.__access_token_manager.create(
+            user_id=user.get_id(),
+            user_uuid=user.get_uuid(),
+            user_email=user.get_email()
+        )
+        new_refresh_token_obj = self.__refresh_token_manager.create(user.get_id(), user.get_uuid())
         return ValidationToken(new_refresh_token_obj, access_token)
 

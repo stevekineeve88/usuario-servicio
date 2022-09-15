@@ -1,25 +1,24 @@
 from typing import Dict
 from sk88_http_response.modules.http.interfaces.http_dict import HTTPDict
-from modules.auth.objects.refresh_token import RefreshToken
 
 
 class ValidationToken(HTTPDict):
     """ Object representing a validation token object
     """
 
-    def __init__(self, refresh_token: RefreshToken, access_token: str):
+    def __init__(self, refresh_token: str, access_token: str):
         """ Constructor for ValidationToken
         Args:
-            refresh_token (RefreshToken):       Refresh token object
+            refresh_token (str):                Refresh token
             access_token (str):                 Access token
         """
-        self.__refresh_token: RefreshToken = refresh_token
+        self.__refresh_token: str = refresh_token
         self.__access_token: str = access_token
 
-    def get_refresh_token(self) -> RefreshToken:
+    def get_refresh_token(self) -> str:
         """ Get refresh token
         Returns:
-            RefreshToken
+            str
         """
         return self.__refresh_token
 
@@ -36,6 +35,6 @@ class ValidationToken(HTTPDict):
             Dict[str, any]
         """
         return {
-            "refresh_token": self.get_refresh_token().get_token(),
+            "refresh_token": self.get_refresh_token(),
             "access_token": self.get_access_token()
         }

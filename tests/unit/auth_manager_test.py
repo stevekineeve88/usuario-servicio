@@ -3,7 +3,6 @@ import time
 import unittest
 from unittest.mock import patch, MagicMock
 import jwt
-from mysql_data_manager.modules.connection.objects.result import Result
 from modules.auth.data.refresh_token_data import RefreshTokenData
 from modules.auth.managers.access_token_manager import AccessTokenManager
 from modules.auth.managers.auth_manager import AuthManager
@@ -13,6 +12,7 @@ from modules.user.managers.status_manager import StatusManager
 from modules.user.managers.user_manager import UserManager
 from modules.user.objects.status import Status
 from modules.user.objects.user import User
+from modules.util.objects.redis_result import RedisResult
 
 
 class AuthManagerTest(unittest.TestCase):
@@ -47,11 +47,11 @@ class AuthManagerTest(unittest.TestCase):
         )
 
     def test_generate_validation_token_fails_on_invalid_refresh_token(self):
-        self.refresh_token_data.load_by_token = MagicMock(return_value=Result(True))
+        self.refresh_token_data.load_by_user_uuid = MagicMock(return_value=RedisResult(True))
         self.user_manager.get_by_id = MagicMock(return_value=User(Status(1, "CONST", "Description")))
-        self.refresh_token_data.insert = MagicMock(return_value=Result(True))
+        self.refresh_token_data.insert = MagicMock(return_value=RedisResult(True))
         self.access_token_manager.create = MagicMock(return_value="Some-Token")
-        self.refresh_token_data.delete_by_token = MagicMock(return_value=Result(True))
+        self.refresh_token_data.delete_by_user_uuid = MagicMock(return_value=RedisResult(True))
         token = jwt.encode({
             "sub:id": 1,
             "sub:uuid": "SOME_UUID",
@@ -62,8 +62,8 @@ class AuthManagerTest(unittest.TestCase):
             self.auth_manager.generate_validation_token(token)
             self.fail("Did not fail to generate tokens with invalid refresh token")
 
-        self.refresh_token_data.load_by_token.assert_not_called()
+        self.refresh_token_data.load_by_user_uuid.assert_not_called()
         self.user_manager.get_by_id.assert_not_called()
         self.refresh_token_data.insert.assert_not_called()
         self.access_token_manager.create.assert_not_called()
-        self.refresh_token_data.delete_by_token.assert_not_called()
+        self.refresh_token_data.delete_by_user_uuid.assert_not_called()

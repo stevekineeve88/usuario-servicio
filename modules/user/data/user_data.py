@@ -63,17 +63,19 @@ class UserData:
         })
 
     def load_auth_info_by_email(self, email: str) -> Result:
-        """ Load password by
+        """ Load authentication information by user email
         Args:
-            email:
-
+            email (str):            User email
         Returns:
-
+            Result
         """
         return self.__connection_manager.select(f"""
             SELECT
                 user.id,
-                user.password
+                bin_to_uuid(user.uuid) as uuid,
+                user.email,
+                user.password,
+                user.status_id
             FROM user
             WHERE user.email = %(email)s
         """, {
