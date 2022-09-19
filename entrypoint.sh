@@ -2,7 +2,7 @@
 
 while ! nc -z $MYSQL_DB_HOST $MYSQL_DB_PORT; do
   echo "WAITING FOR CONNECTION..."
-  sleep 1
+  sleep 5
 done
 
 echo "MySQL started..."

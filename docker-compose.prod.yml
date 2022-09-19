@@ -2,14 +2,14 @@ version: '3.8'
 
 services:
   web:
-    build: .
-    command: python manage.py run -h 0.0.0.0
-    volumes:
-      - ./:/usr/src/app/
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    command: gunicorn --bind 0.0.0.0:5000 manage:app
     ports:
       - 5000:5000
     env_file:
-      - ./.env.dev
+      - ./.env.prod
     depends_on:
       - db
       - redis
@@ -20,11 +20,11 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: service1234
     volumes:
-      - mysql_data:/var/lib/mysql
+      - usuario_servicio_mysql_data_prod:/var/lib/mysql
   redis:
     image: redis:alpine3.16
     ports:
       - 6380:6379
 
 volumes:
-  mysql_data:
+  usuario_servicio_mysql_data_prod:

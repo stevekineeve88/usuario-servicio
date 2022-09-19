@@ -1,4 +1,3 @@
-import os
 from flask.cli import FlaskGroup
 from mysql_data_manager.modules.connection.managers.connection_manager import ConnectionManager
 from mysql_schema_manager.modules.migration.data.change_log_data import ChangeLogData
@@ -9,19 +8,6 @@ from index import app
 from service_locator import get_service_manager
 
 cli = FlaskGroup(app)
-
-
-@cli.command("init_db")
-def init_db():
-    """ Initialize database
-    """
-    service_locator = get_service_manager()
-    connection_manager: ConnectionManager = service_locator.get(ConnectionManager.__name__)
-    result = connection_manager.query(f"""
-        CREATE DATABASE {os.environ['MYSQL_DB_NAME']}
-    """)
-    if not result.get_status():
-        print(result.get_message())
 
 
 @cli.command("db_migration")
