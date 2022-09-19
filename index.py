@@ -11,4 +11,13 @@ app.register_blueprint(user_v1_api)
 app.register_blueprint(auth_v1_api)
 app.register_blueprint(password_v1_api)
 
-app.run(debug=True)
+
+@app.route("/", methods=["GET"])
+def health_check():
+    """ GET healthcheck
+    Returns:
+        tuple
+    """
+    return {
+        "test": "hello world"
+    }, 200
