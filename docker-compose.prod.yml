@@ -6,8 +6,8 @@ services:
       context: .
       dockerfile: Dockerfile.prod
     command: gunicorn --bind 0.0.0.0:5000 manage:app
-    ports:
-      - 5000:5000
+    expose:
+      - 5000
     env_file:
       - ./.env.prod
     depends_on:
@@ -25,6 +25,12 @@ services:
     image: redis:alpine3.16
     ports:
       - 6380:6379
+  nginx:
+    build: ./nginx
+    ports:
+      - 1337:80
+    depends_on:
+      - web
 
 volumes:
   usuario_servicio_mysql_data_prod:
