@@ -7,7 +7,6 @@ done
 
 echo "MySQL started..."
 
-python manage.py init_db
 python manage.py db_migration
 
 exec "$@"
