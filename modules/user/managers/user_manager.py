@@ -76,6 +76,12 @@ class UserManager:
             raise UserFetchException(f"Could not find user with email {email}")
         return self.__build_user(result.get_data()[0])
 
+    def get_by_uuid(self, user_uuid: str) -> User:
+        result = self.__user_data.load_by_uuid(user_uuid)
+        if result.get_affected_rows() == 0:
+            raise UserFetchException(f"Could not find user with UUID {user_uuid}")
+        return self.__build_user(result.get_data()[0])
+
     def update(self, user: User) -> User:
         """ Update user
         Args:
@@ -90,18 +96,18 @@ class UserManager:
             raise UserUpdateException(f"Could not update user with ID {user.get_id()}")
         return self.get_by_id(user.get_id())
 
-    def update_status(self, user_id: int, status: Status) -> User:
+    def update_status(self, user_uuid: str, status: Status) -> User:
         """ Update user status
         Args:
-            user_id (int):      User ID
+            user_uuid (str):    User UUID
             status (Status):    New user status
         Returns:
             User
         """
-        result = self.__user_data.update_status(user_id, status.get_id())
+        result = self.__user_data.update_status(user_uuid, status.get_id())
         if not result.get_status():
-            raise UserUpdateException(f"Could not update status of user with ID {user_id}")
-        return self.get_by_id(user_id)
+            raise UserUpdateException(f"Could not update status of user with UUID {user_uuid}")
+        return self.get_by_uuid(user_uuid)
 
     def update_password(self, token: str, password: str):
         """ Update user password
@@ -121,14 +127,14 @@ class UserManager:
         if not result.get_status():
             raise UserUpdateException("Could not update user password")
 
-    def delete(self, user_id: int):
-        """ Delete user by ID
+    def delete(self, user_uuid: str):
+        """ Delete user by UUID
         Args:
-            user_id (int):          User ID
+            user_uuid (str):          User UUID
         """
-        result = self.__user_data.delete(user_id)
+        result = self.__user_data.delete(user_uuid)
         if result.get_affected_rows() == 0:
-            raise UserDeleteException(f"Could not delete user with ID {user_id}")
+            raise UserDeleteException(f"Could not delete user with UUID {user_uuid}")
 
     def search(self, **kwargs) -> UserSearchResult:
         """ Search user table

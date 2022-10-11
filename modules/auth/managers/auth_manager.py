@@ -1,7 +1,6 @@
 import bcrypt
 from modules.auth.exceptions.auth_password_exception import AuthPasswordException
 from modules.auth.exceptions.auth_status_exception import AuthStatusException
-from modules.auth.exceptions.refresh_token_match_exception import RefreshTokenMatchException
 from modules.auth.managers.access_token_manager import AccessTokenManager
 from modules.auth.managers.refresh_token_manager import RefreshTokenManager
 from modules.auth.objects.validation_token import ValidationToken
@@ -67,14 +66,8 @@ class AuthManager:
         """
         payload = self.__refresh_token_manager.verify_payload(refresh_token)
 
-        user_uuid = payload["sub:uuid"]
-        user_id = payload["sub:id"]
+        user = self.__user_manager.get_by_id(payload["sub:id"])
 
-        if refresh_token != self.__refresh_token_manager.get_by_user_uuid(user_uuid):
-            self.__refresh_token_manager.delete_by_user_uuid(user_uuid)
-            raise RefreshTokenMatchException("Refresh token does not match active")
-
-        user = self.__user_manager.get_by_id(user_id)
         if user.get_status().get_id() != self.__status_manager.get_by_const("ACTIVE").get_id():
             raise AuthStatusException(f"User is not active")
 

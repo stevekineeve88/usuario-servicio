@@ -1,2 +1,0 @@
-class RefreshTokenFetchException(Exception):
-    pass

@@ -40,18 +40,18 @@ def create_user():
         return HTTPResponse(HTTPStatus.INTERNAL_SERVER_ERROR, str(e)).get_response()
 
 
-@user_v1_api.route(f"{ROOT}/<user_id>", methods=["PATCH"])
-def update_user_by_id(user_id: int):
+@user_v1_api.route(f"{ROOT}/<user_uuid>", methods=["PATCH"])
+def update_user_by_uuid(user_uuid: str):
     """ PATCH user information
     Args:
-        user_id (int):
+        user_uuid (str):
     Returns:
         tuple
     """
     service_locator = get_service_manager()
     user_manager: UserManager = service_locator.get(UserManager.__name__)
     try:
-        user = user_manager.get_by_id(int(user_id))
+        user = user_manager.get_by_uuid(user_uuid)
 
         data = json.loads(request.get_data().decode())
         user.set_first_name(data["first_name"] if "first_name" in data else user.get_first_name())
@@ -67,11 +67,11 @@ def update_user_by_id(user_id: int):
         return HTTPResponse(HTTPStatus.INTERNAL_SERVER_ERROR, str(e)).get_response()
 
 
-@user_v1_api.route(f"{ROOT}/<user_id>/status/<status_id>", methods=["PATCH"])
-def update_user_status_by_user_id(user_id: int, status_id: int):
+@user_v1_api.route(f"{ROOT}/<user_uuid>/status/<status_id>", methods=["PATCH"])
+def update_user_status_by_user_uuid(user_uuid: str, status_id: int):
     """ PATCH user status
     Args:
-        user_id (int):
+        user_uuid (str):
         status_id (int):
     Returns:
         tuple
@@ -81,7 +81,7 @@ def update_user_status_by_user_id(user_id: int, status_id: int):
     status_manager: StatusManager = service_locator.get(StatusManager.__name__)
     try:
         status = status_manager.get_by_id(int(status_id))
-        user = user_manager.update_status(int(user_id), status)
+        user = user_manager.update_status(user_uuid, status)
         return HTTPResponse(HTTPStatus.OK, "", [user]).get_response()
     except UserUpdateException as e:
         return HTTPResponse(HTTPStatus.CONFLICT, str(e)).get_response()
@@ -93,18 +93,18 @@ def update_user_status_by_user_id(user_id: int, status_id: int):
         return HTTPResponse(HTTPStatus.INTERNAL_SERVER_ERROR, str(e)).get_response()
 
 
-@user_v1_api.route(f"{ROOT}/<user_id>", methods=["GET"])
-def get_user_by_id(user_id: int):
+@user_v1_api.route(f"{ROOT}/<user_uuid>", methods=["GET"])
+def get_user_by_uuid(user_uuid: str):
     """ GET user
     Args:
-        user_id (int):
+        user_uuid (str):
     Returns:
         tuple
     """
     service_locator = get_service_manager()
     user_manager: UserManager = service_locator.get(UserManager.__name__)
     try:
-        user = user_manager.get_by_id(int(user_id))
+        user = user_manager.get_by_uuid(user_uuid)
         return HTTPResponse(HTTPStatus.OK, "", [user]).get_response()
     except UserFetchException as e:
         return HTTPResponse(HTTPStatus.NOT_FOUND, str(e)).get_response()
@@ -141,18 +141,18 @@ def search_users():
         return HTTPResponse(HTTPStatus.INTERNAL_SERVER_ERROR, str(e)).get_response()
 
 
-@user_v1_api.route(f"{ROOT}/<user_id>", methods=["DELETE"])
-def delete_user_by_id(user_id: int):
+@user_v1_api.route(f"{ROOT}/<user_uuid>", methods=["DELETE"])
+def delete_user_by_id(user_uuid: str):
     """ DELETE user
     Args:
-        user_id (int):
+        user_uuid (str):
     Returns:
         tuple
     """
     service_locator = get_service_manager()
     user_manager: UserManager = service_locator.get(UserManager.__name__)
     try:
-        user_manager.delete(int(user_id))
+        user_manager.delete(user_uuid)
         return HTTPResponse(HTTPStatus.OK, "").get_response()
     except UserDeleteException as e:
         return HTTPResponse(HTTPStatus.CONFLICT, str(e)).get_response()

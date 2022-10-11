@@ -5,10 +5,6 @@ from flask import Blueprint, request
 from sk88_http_response.modules.http.objects.http_response import HTTPResponse
 from modules.auth.exceptions.auth_password_exception import AuthPasswordException
 from modules.auth.exceptions.auth_status_exception import AuthStatusException
-from modules.auth.exceptions.refresh_token_create_exception import RefreshTokenCreateException
-from modules.auth.exceptions.refresh_token_delete_exception import RefreshTokenDeleteException
-from modules.auth.exceptions.refresh_token_fetch_exception import RefreshTokenFetchException
-from modules.auth.exceptions.refresh_token_match_exception import RefreshTokenMatchException
 from modules.auth.managers.access_token_manager import AccessTokenManager
 from modules.auth.managers.auth_manager import AuthManager
 from modules.user.exceptions.user_fetch_exception import UserFetchException
@@ -33,8 +29,7 @@ def authentication():
     except (
         UserFetchException,
         AuthPasswordException,
-        AuthStatusException,
-        RefreshTokenCreateException
+        AuthStatusException
     ) as e:
         return HTTPResponse(HTTPStatus.FORBIDDEN, str(e)).get_response()
     except Exception as e:
@@ -78,12 +73,8 @@ def refresh_access_token():
     except (
         jwt.exceptions.InvalidSignatureError,
         jwt.exceptions.MissingRequiredClaimError,
-        RefreshTokenFetchException,
         UserFetchException,
-        AuthStatusException,
-        RefreshTokenCreateException,
-        RefreshTokenDeleteException,
-        RefreshTokenMatchException
+        AuthStatusException
     ) as e:
         return HTTPResponse(HTTPStatus.FORBIDDEN, str(e)).get_response()
     except Exception as e:
