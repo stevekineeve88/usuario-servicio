@@ -6,7 +6,6 @@ from modules.password.exceptions.password_reset_fetch_exception import PasswordR
 from modules.password.managers.password_reset_manager import PasswordResetManager
 from modules.user.managers.status_manager import StatusManager
 from modules.user.managers.user_manager import UserManager
-from modules.util.managers.redis_manager import RedisManager
 from tests.integration.setup.integration_setup import IntegrationSetup
 
 
@@ -14,7 +13,6 @@ class PasswordResetManagerTest(IntegrationSetup):
     auth_manager: AuthManager = None
     user_manager: UserManager = None
     connection_manager: ConnectionManager = None
-    redis_manager: RedisManager = None
     status_manager: StatusManager = None
     password_reset_manager: PasswordResetManager = None
 
@@ -25,7 +23,6 @@ class PasswordResetManagerTest(IntegrationSetup):
         cls.user_manager = cls.service_locator.get(UserManager.__name__)
         cls.status_manager = cls.service_locator.get(StatusManager.__name__)
         cls.connection_manager = cls.service_locator.get(ConnectionManager.__name__)
-        cls.redis_manager = cls.service_locator.get(RedisManager.__name__)
         cls.password_reset_manager = cls.service_locator.get(PasswordResetManager.__name__)
 
     def test_create_creates_password_reset_token(self):
@@ -107,5 +104,3 @@ class PasswordResetManagerTest(IntegrationSetup):
         )
         if not result.get_status():
             raise Exception(f"Failed to teardown password reset test instance: {result.get_message()}")
-
-        self.redis_manager.get_connection().flushdb()

@@ -11,14 +11,12 @@ from modules.user.exceptions.user_update_exception import UserUpdateException
 from modules.user.managers.status_manager import StatusManager
 from modules.user.managers.user_manager import UserManager
 from modules.user.objects.status import Status
-from modules.util.managers.redis_manager import RedisManager
 from tests.integration.setup.integration_setup import IntegrationSetup
 
 
 class UserManagerTest(IntegrationSetup):
     user_manager: UserManager = None
     connection_manager: ConnectionManager = None
-    redis_manager: RedisManager = None
     status_manager: StatusManager = None
     password_reset_manager: PasswordResetManager = None
     auth_manager: AuthManager = None
@@ -28,7 +26,6 @@ class UserManagerTest(IntegrationSetup):
         super().setUpClass()
         cls.user_manager = cls.service_locator.get(UserManager.__name__)
         cls.connection_manager = cls.service_locator.get(ConnectionManager.__name__)
-        cls.redis_manager = cls.service_locator.get(RedisManager.__name__)
         cls.status_manager = cls.service_locator.get(StatusManager.__name__)
         cls.password_reset_manager = cls.service_locator.get(PasswordResetManager.__name__)
         cls.auth_manager = cls.service_locator.get(AuthManager.__name__)
@@ -143,7 +140,7 @@ class UserManagerTest(IntegrationSetup):
             password="password1234"
         )
 
-        self.user_manager.update_status(user.get_id(), new_status)
+        self.user_manager.update_status(user.get_uuid(), new_status)
         new_user = self.user_manager.get_by_id(user.get_id())
 
         self.assertEqual(new_status.get_id(), new_user.get_status().get_id())
@@ -157,7 +154,7 @@ class UserManagerTest(IntegrationSetup):
             password="password1234"
         )
         with self.assertRaises(UserFetchException):
-            self.user_manager.update_status(user.get_id()+1, self.status_manager.get_by_const("INACTIVE"))
+            self.user_manager.update_status("sdfsdfsdf", self.status_manager.get_by_const("INACTIVE"))
             self.fail("Did not fail on update status for invalid user ID")
 
     def test_update_status_fails_on_invalid_status_id(self):
@@ -169,7 +166,7 @@ class UserManagerTest(IntegrationSetup):
             password="password1234"
         )
         with self.assertRaises(UserUpdateException):
-            self.user_manager.update_status(user.get_id(), Status(123456, "SOME_CONST", "Description"))
+            self.user_manager.update_status(user.get_uuid(), Status(123456, "SOME_CONST", "Description"))
             self.fail("Did not fail on update status for invalid status ID")
 
     def test_update_password_updates_password(self):
@@ -213,7 +210,7 @@ class UserManagerTest(IntegrationSetup):
             email="jj@gmail.com",
             password="password1234"
         )
-        self.user_manager.delete(user.get_id())
+        self.user_manager.delete(user.get_uuid())
 
         with self.assertRaises(UserFetchException):
             self.user_manager.get_by_id(user.get_id())
@@ -221,7 +218,7 @@ class UserManagerTest(IntegrationSetup):
 
     def test_delete_fails_on_invalid_id(self):
         with self.assertRaises(UserDeleteException):
-            self.user_manager.delete(1)
+            self.user_manager.delete("sfdsdf")
             self.fail("Did not fail on delete for invalid ID")
 
     def test_search_searches_users(self):
@@ -295,5 +292,3 @@ class UserManagerTest(IntegrationSetup):
         """)
         if not result.get_status():
             raise Exception(f"Failed to teardown user test instance: {result.get_message()}")
-
-        self.redis_manager.get_connection().flushdb()

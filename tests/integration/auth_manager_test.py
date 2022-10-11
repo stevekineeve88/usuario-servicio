@@ -2,13 +2,11 @@ import time
 from mysql_data_manager.modules.connection.managers.connection_manager import ConnectionManager
 from modules.auth.exceptions.auth_password_exception import AuthPasswordException
 from modules.auth.exceptions.auth_status_exception import AuthStatusException
-from modules.auth.exceptions.refresh_token_match_exception import RefreshTokenMatchException
 from modules.auth.managers.access_token_manager import AccessTokenManager
 from modules.auth.managers.auth_manager import AuthManager
 from modules.auth.managers.refresh_token_manager import RefreshTokenManager
 from modules.user.managers.status_manager import StatusManager
 from modules.user.managers.user_manager import UserManager
-from modules.util.managers.redis_manager import RedisManager
 from tests.integration.setup.integration_setup import IntegrationSetup
 
 
@@ -16,7 +14,6 @@ class AuthManagerTest(IntegrationSetup):
     auth_manager: AuthManager = None
     user_manager: UserManager = None
     connection_manager: ConnectionManager = None
-    redis_manager: RedisManager = None
     status_manager: StatusManager = None
     access_token_manager: AccessTokenManager = None
     refresh_token_manager: RefreshTokenManager = None
@@ -28,7 +25,6 @@ class AuthManagerTest(IntegrationSetup):
         cls.user_manager = cls.service_locator.get(UserManager.__name__)
         cls.status_manager = cls.service_locator.get(StatusManager.__name__)
         cls.connection_manager = cls.service_locator.get(ConnectionManager.__name__)
-        cls.redis_manager = cls.service_locator.get(RedisManager.__name__)
         cls.refresh_token_manager = cls.service_locator.get(RefreshTokenManager.__name__)
         cls.access_token_manager = cls.service_locator.get(AccessTokenManager.__name__)
 
@@ -81,12 +77,10 @@ class AuthManagerTest(IntegrationSetup):
             "last_name": "Smith",
             "password": "password1234"
         }
-        user = self.user_manager.create(self.status_manager.get_by_const("ACTIVE"), **user_info)
+        self.user_manager.create(self.status_manager.get_by_const("ACTIVE"), **user_info)
         validation_token = self.auth_manager.authenticate(user_info["email"], user_info["password"])
         time.sleep(1)
         nv_token = self.auth_manager.generate_validation_token(validation_token.get_refresh_token())
-
-        self.assertEqual(nv_token.get_refresh_token(), self.refresh_token_manager.get_by_user_uuid(user.get_uuid()))
 
         self.assertNotEqual(validation_token.get_refresh_token(), nv_token.get_refresh_token())
         self.assertNotEqual(validation_token.get_access_token(), nv_token.get_access_token())
@@ -100,25 +94,10 @@ class AuthManagerTest(IntegrationSetup):
         }
         user = self.user_manager.create(self.status_manager.get_by_const("ACTIVE"), **user_info)
         validation_token = self.auth_manager.authenticate(user_info["email"], user_info["password"])
-        self.user_manager.update_status(user.get_id(), self.status_manager.get_by_const("INACTIVE"))
+        self.user_manager.update_status(user.get_uuid(), self.status_manager.get_by_const("INACTIVE"))
         with self.assertRaises(AuthStatusException):
             self.auth_manager.generate_validation_token(validation_token.get_refresh_token())
             self.fail("Did not fail on user status not active for token re generation")
-
-    def test_generate_validation_token_fails_on_old_validation_token(self):
-        user_info = {
-            "email": "ss@gmail.com",
-            "first_name": "Scott",
-            "last_name": "Smith",
-            "password": "password1234"
-        }
-        self.user_manager.create(self.status_manager.get_by_const("ACTIVE"), **user_info)
-        validation_token = self.auth_manager.authenticate(user_info["email"], user_info["password"])
-        time.sleep(1)
-        self.auth_manager.generate_validation_token(validation_token.get_refresh_token())
-        with self.assertRaises(RefreshTokenMatchException):
-            self.auth_manager.generate_validation_token(validation_token.get_refresh_token())
-            self.fail("Did not fail on generate validation token with old refresh token")
 
     def tearDown(self) -> None:
         result = self.connection_manager.query(f"""
@@ -126,5 +105,3 @@ class AuthManagerTest(IntegrationSetup):
         """)
         if not result.get_status():
             raise Exception(f"Failed to teardown auth manager test instance: {result.get_message()}")
-
-        self.redis_manager.get_connection().flushdb()

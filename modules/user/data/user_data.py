@@ -85,6 +85,29 @@ class UserData:
             "email": email
         })
 
+    def load_by_uuid(self, user_uuid: str) -> Result:
+        """ Load by UUID
+        Args:
+            user_uuid (str):
+        Returns:
+            Result
+        """
+        return self.__connection_manager.select(f"""
+            SELECT
+                user.id,
+                bin_to_uuid(user.uuid) as uuid,
+                user.first_name,
+                user.last_name,
+                user.email,
+                user.status_id,
+                user.created_timestamp,
+                user.update_timestamp
+            FROM user
+            WHERE bin_to_uuid(user.uuid) = %(uuid)s
+        """, {
+            "uuid": user_uuid
+        })
+
     def load_auth_info_by_email(self, email: str) -> Result:
         """ Load authentication information by user email
         Args:
@@ -125,20 +148,20 @@ class UserData:
             "id": user_id
         })
 
-    def update_status(self, user_id: int, status_id: int) -> Result:
+    def update_status(self, user_uuid: str, status_id: int) -> Result:
         """ Update user status
         Args:
-            user_id (int):      User ID
+            user_uuid (str):    User UUID
             status_id (int):    Status ID
         Returns:
             Result
         """
         return self.__connection_manager.query(f"""
             UPDATE user SET status_id = %(status_id)s
-            WHERE id = %(id)s
+            WHERE bin_to_uuid(uuid) = %(uuid)s
         """, {
             "status_id": status_id,
-            "id": user_id
+            "uuid": user_uuid
         })
 
     def update_password(self, user_id: int, password: bytes) -> Result:
@@ -157,17 +180,17 @@ class UserData:
             "id": user_id
         })
 
-    def delete(self, user_id: int) -> Result:
+    def delete(self, user_uuid: str) -> Result:
         """ Delete user
         Args:
-            user_id (int):      User ID
+            user_uuid (str):      User UUID
         Returns:
             Result
         """
         return self.__connection_manager.query(f"""
-            DELETE FROM user WHERE id = %(id)s
+            DELETE FROM user WHERE bin_to_uuid(uuid) = %(uuid)s
         """, {
-            "id": user_id
+            "uuid": user_uuid
         })
 
     def search(self, **kwargs) -> Result:

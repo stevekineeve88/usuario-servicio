@@ -8,12 +8,10 @@ from sk88_service_locator.modules.service.managers.service_manager import Servic
 from modules.auth.managers.access_token_manager import AccessTokenManager
 from modules.auth.managers.refresh_token_manager import RefreshTokenManager
 from modules.password.managers.password_reset_manager import PasswordResetManager
-from modules.util.managers.redis_manager import RedisManager
 from service_locator import get_service_manager
 from tests.integration.setup.factories.access_token_manager_factory_test import AccessTokenManagerFactoryTest
 from tests.integration.setup.factories.connection_manager_factory_test import ConnectionManagerFactoryTest
 from tests.integration.setup.factories.password_reset_manager_factory_test import PasswordResetManagerFactoryTest
-from tests.integration.setup.factories.redis_manager_factory_test import RedisManagerFactoryTest
 from tests.integration.setup.factories.refresh_token_manager_factory_test import RefreshTokenManagerFactoryTest
 
 
@@ -29,7 +27,6 @@ class IntegrationSetup(unittest.TestCase):
             ConnectionManager.__name__: connection_manager_factory,
             RefreshTokenManager.__name__: RefreshTokenManagerFactoryTest(),
             AccessTokenManager.__name__: AccessTokenManagerFactoryTest(),
-            RedisManager.__name__: RedisManagerFactoryTest(),
             PasswordResetManager.__name__: PasswordResetManagerFactoryTest()
         })
 
